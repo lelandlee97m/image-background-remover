@@ -1,0 +1,6 @@
+name = "image-background-remover"
+main = "index.ts"
+compatibility_date = "2024-01-01"
+
+[vars]
+# 在 Cloudflare Dashboard 中设置 REMOVE_BG_API_KEY secret
