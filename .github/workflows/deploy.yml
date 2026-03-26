@@ -19,11 +19,11 @@ jobs:
 
       - name: Install dependencies
         working-directory: project/frontend
-        run: npm ci
+        run: npm install --prefer-offline || npm install
 
       - name: Build
         working-directory: project/frontend
-        run: npm run build
+        run: npx next build
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/pages-action@v1
