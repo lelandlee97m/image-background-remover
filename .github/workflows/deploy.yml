@@ -16,14 +16,18 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: ''
+
+      - name: Install pnpm
+        run: npm install -g pnpm
 
       - name: Install dependencies
         working-directory: project/frontend
-        run: npm install --prefer-offline || npm install
+        run: pnpm install --frozen-lockfile || pnpm install
 
       - name: Build
         working-directory: project/frontend
-        run: npx next build
+        run: pnpm run build
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/pages-action@v1
