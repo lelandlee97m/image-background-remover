@@ -16,7 +16,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'project/frontend'
 
       - name: Install dependencies
         working-directory: project/frontend
@@ -34,4 +33,3 @@ jobs:
           projectName: image-bg-remover
           directory: project/frontend/out
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
-          wranglerVersion: '3'
