@@ -1,14 +1,17 @@
 'use client'
 
 import { useCallback, useState } from 'react'
+import { Lang, translations } from '@/lib/i18n'
 
 interface UploadZoneProps {
   onFileSelect: (file: File) => void
   disabled?: boolean
+  lang: Lang
 }
 
-export default function UploadZone({ onFileSelect, disabled }: UploadZoneProps) {
+export default function UploadZone({ onFileSelect, disabled, lang }: UploadZoneProps) {
   const [dragging, setDragging] = useState(false)
+  const t = translations[lang]
 
   const handleFile = useCallback(
     (file: File) => {
@@ -53,8 +56,8 @@ export default function UploadZone({ onFileSelect, disabled }: UploadZoneProps) 
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
           d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
       </svg>
-      <p className="text-gray-600 font-medium">拖拽图片到这里，或点击上传</p>
-      <p className="text-sm text-gray-400 mt-1">支持 PNG / JPEG，最大 5MB</p>
+      <p className="text-gray-600 font-medium">{t.dragDrop}</p>
+      <p className="text-sm text-gray-400 mt-1">{t.supported}</p>
       <input
         type="file"
         accept="image/png,image/jpeg"

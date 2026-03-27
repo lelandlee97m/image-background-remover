@@ -4,14 +4,19 @@ import { useState } from 'react'
 import UploadZone from '@/components/UploadZone'
 import ImagePreview from '@/components/ImagePreview'
 import DownloadButton from '@/components/DownloadButton'
+import LanguageSelector from '@/components/LanguageSelector'
+import { Lang, translations } from '@/lib/i18n'
 
 type Status = 'idle' | 'loading' | 'success' | 'error'
 
 export default function Home() {
   const [status, setStatus] = useState<Status>('idle')
+  const [lang, setLang] = useState<Lang>('zh-CN')
   const [originalUrl, setOriginalUrl] = useState<string>('')
   const [resultUrl, setResultUrl] = useState<string>('')
   const [errorMsg, setErrorMsg] = useState<string>('')
+
+  const t = translations[lang]
 
   const handleFileSelect = async (file: File) => {
     setStatus('loading')
@@ -52,20 +57,23 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex flex-col items-center py-16 px-4">
       {/* Header */}
-      <div className="text-center mb-10">
-        <h1 className="text-4xl font-bold text-gray-900 mb-3">Image Background Remover</h1>
-        <p className="text-gray-500 text-lg">上传图片，一键去除背景，免费快速</p>
+      <div className="w-full max-w-3xl flex items-center justify-between mb-8">
+        <div className="text-left">
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">{t.title}</h1>
+          <p className="text-gray-500 text-lg">{t.subtitle}</p>
+        </div>
+        <LanguageSelector lang={lang} onChange={setLang} />
       </div>
 
       <div className="w-full max-w-3xl bg-white rounded-2xl shadow-lg p-8 flex flex-col gap-8">
         {/* Upload */}
-        <UploadZone onFileSelect={handleFileSelect} disabled={status === 'loading'} />
+        <UploadZone onFileSelect={handleFileSelect} disabled={status === 'loading'} lang={lang} />
 
         {/* Loading */}
         {status === 'loading' && (
           <div className="flex flex-col items-center gap-3 py-6">
             <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-            <p className="text-gray-500 text-sm">正在去除背景，请稍候...</p>
+            <p className="text-gray-500 text-sm">{t.loading}</p>
           </div>
         )}
 
@@ -76,8 +84,8 @@ export default function Home() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                 d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span>{errorMsg}</span>
-            <button onClick={handleReset} className="ml-auto text-sm underline">重试</button>
+            <span>{errorMsg || t.error}</span>
+            <button onClick={handleReset} className="ml-auto text-sm underline">{t.retry}</button>
           </div>
         )}
 
@@ -91,14 +99,14 @@ export default function Home() {
                 onClick={handleReset}
                 className="px-6 py-3 border border-gray-300 text-gray-600 rounded-xl hover:bg-gray-50 transition-all font-medium"
               >
-                重新上传
+                {t.reupload}
               </button>
             </div>
           </>
         )}
       </div>
 
-      <p className="text-xs text-gray-400 mt-8">Powered by Remove.bg · Deployed on Cloudflare</p>
+      <p className="text-xs text-gray-400 mt-8">{t.poweredBy}</p>
     </main>
   )
 }
