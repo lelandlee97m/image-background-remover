@@ -20,15 +20,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'pnpm'
-          cache-dependency-path: project/frontend/pnpm-lock.yaml
 
       - name: Install pnpm
         run: npm install -g pnpm
 
       - name: Install dependencies
         working-directory: project/frontend
-        run: pnpm install --frozen-lockfile || pnpm install
+        run: pnpm install
 
       - name: Build
         working-directory: project/frontend
