@@ -28,14 +28,21 @@ export default function Home() {
       const formData = new FormData()
       formData.append('image', file)
 
-      const res = await fetch('/api/remove-bg', {
+      const workerUrl = process.env.NEXT_PUBLIC_WORKER_URL || '/api/remove-bg'
+      const res = await fetch(workerUrl, {
         method: 'POST',
         body: formData,
       })
 
       if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.error || '处理失败')
+        let errMsg = '处理失败'
+        try {
+          const data = await res.json()
+          errMsg = data.error || errMsg
+        } catch {
+          errMsg = `请求失败 (${res.status})`
+        }
+        throw new Error(errMsg)
       }
 
       const blob = await res.blob()
