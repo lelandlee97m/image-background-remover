@@ -31,6 +31,8 @@ jobs:
       - name: Build
         working-directory: project/frontend
         run: pnpm run build
+        env:
+          NEXT_PUBLIC_WORKER_URL: ${{ secrets.NEXT_PUBLIC_WORKER_URL }}
 
       - name: Deploy to Cloudflare Pages
         working-directory: project/frontend

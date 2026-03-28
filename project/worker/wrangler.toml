@@ -1,6 +1,6 @@
 name = "image-background-remover"
 main = "index.ts"
-compatibility_date = "2024-01-01"
+compatibility_date = "2024-09-23"
 
-[vars]
-# 在 Cloudflare Dashboard 中设置 REMOVE_BG_API_KEY secret
+# REMOVE_BG_API_KEY 通过 GitHub Actions secret 注入
+# 本地开发：运行 `npx wrangler secret put REMOVE_BG_API_KEY`
