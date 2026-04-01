@@ -5,6 +5,7 @@ import UploadZone from '@/components/UploadZone'
 import ImagePreview from '@/components/ImagePreview'
 import DownloadButton from '@/components/DownloadButton'
 import LanguageSelector from '@/components/LanguageSelector'
+import GoogleAuth from '@/components/GoogleAuth'
 import { Lang, translations } from '@/lib/i18n'
 
 type Status = 'idle' | 'loading' | 'success' | 'error'
@@ -69,7 +70,9 @@ export default function Home() {
           <h1 className="text-4xl font-bold text-gray-900 mb-2">{t.title}</h1>
           <p className="text-gray-500 text-lg">{t.subtitle}</p>
         </div>
-        <LanguageSelector lang={lang} onChange={setLang} />
+          <LanguageSelector lang={lang} onChange={setLang} />
+        </div>
+        <GoogleAuth />
       </div>
 
       <div className="w-full max-w-3xl bg-white rounded-2xl shadow-lg p-8 flex flex-col gap-8">
