@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS sessions (
   email TEXT NOT NULL,
   name TEXT NOT NULL,
   picture TEXT,
-  created_at TEXT DEFAULT (datetime('now')),
+  created_at TEXT,
   expires_at TEXT NOT NULL
 );
 

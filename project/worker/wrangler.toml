@@ -7,7 +7,7 @@ compatibility_date = "2024-09-23"
 [[d1_databases]]
 binding = "DB"
 database_name = "auth-sessions"
-database_id = "<DATABASE_ID>"
+database_id = "07d3fb17-7e47-4c75-8546-2070b6dc47cb"
 
 # API keys and OAuth credentials via GitHub Actions secrets:
 # - REMOVE_BG_API_KEY
