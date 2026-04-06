@@ -2,8 +2,10 @@ name = "image-background-remover"
 main = "index.ts"
 compatibility_date = "2024-09-23"
 
+[vars]
+OAUTH_REDIRECT_URI = "https://imagebackgroundremover88ic.shop/api/auth/callback"
+
 # D1 database for session storage
-# Replace <DATABASE_ID> with your actual D1 database ID after creation
 [[d1_databases]]
 binding = "DB"
 database_name = "auth-sessions"

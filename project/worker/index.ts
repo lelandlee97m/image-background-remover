@@ -2,6 +2,7 @@ export interface Env {
   REMOVE_BG_API_KEY: string
   GOOGLE_CLIENT_ID: string
   GOOGLE_CLIENT_SECRET: string
+  OAUTH_REDIRECT_URI: string
   DB: D1Database
 }
 
@@ -45,14 +46,13 @@ function jsonResponse(data: unknown, status = 200, headers: Record<string, strin
 
 async function handleLogin(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url)
-  const workerUrl = `${url.protocol}//${url.host}`
-  const redirectUri = `${workerUrl}/api/auth/callback`
+  const redirectUri = env.OAUTH_REDIRECT_URI || `${url.protocol}//${url.host}/api/auth/callback`
 
   // Where to redirect back after login
   const frontendUrl =
     request.headers.get('Referer') ||
     url.searchParams.get('redirect') ||
-    workerUrl
+    `${url.protocol}//${url.host}`
 
   const googleAuthUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth')
   googleAuthUrl.searchParams.set('client_id', env.GOOGLE_CLIENT_ID)
@@ -80,7 +80,8 @@ async function handleCallback(request: Request, env: Env): Promise<Response> {
     return new Response('Missing authorization code', { status: 400 })
   }
 
-  const workerUrl = `${url.protocol}//${url.host}`
+  const url = new URL(request.url)
+  const redirectUri = env.OAUTH_REDIRECT_URI || `${url.protocol}//${url.host}/api/auth/callback`
 
   // Exchange code for tokens
   const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
@@ -90,7 +91,7 @@ async function handleCallback(request: Request, env: Env): Promise<Response> {
       code,
       client_id: env.GOOGLE_CLIENT_ID,
       client_secret: env.GOOGLE_CLIENT_SECRET,
-      redirect_uri: `${workerUrl}/api/auth/callback`,
+      redirect_uri: redirectUri,
       grant_type: 'authorization_code',
     }),
   })
