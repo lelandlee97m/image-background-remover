@@ -104,9 +104,9 @@ async function handleCallback(request: Request, env: Env): Promise<Response> {
   const tokens = await tokenRes.json<{ id_token: string }>()
 
   // Decode JWT payload (no need to verify signature — Google is the issuer)
-  const payload: GoogleUser = JSON.parse(
-    Buffer.from(tokens.id_token.split('.')[1], 'base64').toString(),
-  )
+  // Use atob() instead of Buffer (Cloudflare Workers runtime has no Buffer)
+  const base64 = tokens.id_token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')
+  const payload: GoogleUser = JSON.parse(atob(base64))
 
   // Create session in D1 (7-day expiry)
   const sessionId = generateSessionToken()
