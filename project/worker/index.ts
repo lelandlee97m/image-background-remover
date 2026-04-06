@@ -80,7 +80,6 @@ async function handleCallback(request: Request, env: Env): Promise<Response> {
     return new Response('Missing authorization code', { status: 400 })
   }
 
-  const url = new URL(request.url)
   const redirectUri = env.OAUTH_REDIRECT_URI || `${url.protocol}//${url.host}/api/auth/callback`
 
   // Exchange code for tokens
