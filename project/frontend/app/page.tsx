@@ -70,9 +70,10 @@ export default function Home() {
           <h1 className="text-4xl font-bold text-gray-900 mb-2">{t.title}</h1>
           <p className="text-gray-500 text-lg">{t.subtitle}</p>
         </div>
+        <div className="flex items-center gap-2">
           <LanguageSelector lang={lang} onChange={setLang} />
+          <GoogleAuth />
         </div>
-        <GoogleAuth />
       </div>
 
       <div className="w-full max-w-3xl bg-white rounded-2xl shadow-lg p-8 flex flex-col gap-8">
