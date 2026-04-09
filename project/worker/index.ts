@@ -182,10 +182,83 @@ async function handleLogout(request: Request, env: Env): Promise<Response> {
   )
 }
 
-// ─── Background Removal (original) ─────────────────────────────
+// ─── Usage Quota ────────────────────────────────────────────────
+
+function getTodayDate(): string {
+  return new Date().toISOString().slice(0, 10) // YYYY-MM-DD in UTC
+}
+
+async function getUserIdentity(request: Request, env: Env): Promise<string> {
+  // Check if user is logged in via session
+  const cookie = request.headers.get('Cookie') || ''
+  const match = cookie.match(/session=([^;]+)/)
+  const sessionId = match?.[1]
+
+  if (sessionId) {
+    const session = await env.DB
+      .prepare('SELECT google_id FROM sessions WHERE id = ? AND expires_at > datetime("now")')
+      .bind(sessionId)
+      .first<{ google_id: string }>()
+    if (session) return `user:${session.google_id}`
+  }
+
+  // Fall back to IP
+  const ip = request.headers.get('CF-Connecting-IP') || 'unknown'
+  return `ip:${ip}`
+}
+
+async function getQuota(request: Request, env: Env): Promise<{ remaining: number; total: number }> {
+  const TOTAL = 3
+  const identity = await getUserIdentity(request, env)
+  const today = getTodayDate()
+
+  const row = await env.DB
+    .prepare('SELECT usage_count FROM usage_tracking WHERE user_identifier = ? AND date = ?')
+    .bind(identity, today)
+    .first<{ usage_count: number }>()
+
+  const used = row?.usage_count || 0
+  return { remaining: Math.max(0, TOTAL - used), total: TOTAL }
+}
+
+async function incrementUsage(request: Request, env: Env): Promise<void> {
+  const identity = await getUserIdentity(request, env)
+  const today = getTodayDate()
+
+  // Try increment, fall back to insert
+  const result = await env.DB
+    .prepare('UPDATE usage_tracking SET usage_count = usage_count + 1 WHERE user_identifier = ? AND date = ?')
+    .bind(identity, today)
+    .run()
+
+  if (result.meta.changes === 0) {
+    // No row exists, insert one
+    await env.DB
+      .prepare('INSERT OR IGNORE INTO usage_tracking (user_identifier, date, usage_count) VALUES (?, ?, 1)')
+      .bind(identity, today)
+      .run()
+  }
+}
+
+async function handleQuota(request: Request, env: Env): Promise<Response> {
+  const quota = await getQuota(request, env)
+  const origin = request.headers.get('Origin') || ''
+  return jsonResponse(quota, 200, corsHeaders(origin))
+}
+
+// ─── Background Removal ────────────────────────────────────────
 
 async function handleRemoveBg(request: Request, env: Env): Promise<Response> {
   try {
+    // Check quota first
+    const quota = await getQuota(request, env)
+    if (quota.remaining <= 0) {
+      return jsonResponse(
+        { error: '今日免费额度已用完', remaining: 0, total: quota.total },
+        429,
+      )
+    }
+
     const formData = await request.formData()
     const imageFile = formData.get('image') as File | null
 
@@ -216,6 +289,10 @@ async function handleRemoveBg(request: Request, env: Env): Promise<Response> {
     }
 
     const resultBuffer = await response.arrayBuffer()
+
+    // Increment usage after successful processing
+    await incrementUsage(request, env)
+
     return new Response(resultBuffer, {
       headers: {
         'Content-Type': 'image/png',
@@ -259,6 +336,11 @@ export default {
     }
     if (path === '/api/auth/logout' && request.method === 'POST') {
       return handleLogout(request, env)
+    }
+
+    // Quota
+    if (path === '/api/quota' && request.method === 'GET') {
+      return handleQuota(request, env)
     }
 
     // Background removal

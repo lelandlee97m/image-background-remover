@@ -36,3 +36,13 @@ export async function logout(): Promise<void> {
     // ignore
   }
 }
+
+export async function getQuota(): Promise<{ remaining: number; total: number }> {
+  if (!WORKER_URL) return { remaining: 3, total: 3 }
+  try {
+    const res = await fetch(`${WORKER_URL}/api/quota`, { credentials: 'include' })
+    return await res.json()
+  } catch {
+    return { remaining: 3, total: 3 }
+  }
+}

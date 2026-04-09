@@ -1,12 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import UploadZone from '@/components/UploadZone'
 import ImagePreview from '@/components/ImagePreview'
 import DownloadButton from '@/components/DownloadButton'
 import LanguageSelector from '@/components/LanguageSelector'
 import GoogleAuth from '@/components/GoogleAuth'
 import { Lang, translations } from '@/lib/i18n'
+import { getQuota } from '@/lib/auth'
 
 type Status = 'idle' | 'loading' | 'success' | 'error'
 
@@ -16,8 +17,15 @@ export default function Home() {
   const [originalUrl, setOriginalUrl] = useState<string>('')
   const [resultUrl, setResultUrl] = useState<string>('')
   const [errorMsg, setErrorMsg] = useState<string>('')
+  const [quotaRemaining, setQuotaRemaining] = useState<number>(3)
+  const [quotaTotal] = useState<number>(3)
 
   const t = translations[lang]
+
+  // Load quota on mount
+  useEffect(() => {
+    getQuota().then((q) => setQuotaRemaining(q.remaining))
+  }, [])
 
   const handleFileSelect = async (file: File) => {
     setStatus('loading')
@@ -49,9 +57,14 @@ export default function Home() {
       const blob = await res.blob()
       setResultUrl(URL.createObjectURL(blob))
       setStatus('success')
+      // Refresh quota
+      getQuota().then((q) => setQuotaRemaining(q.remaining))
     } catch (err: unknown) {
-      setErrorMsg(err instanceof Error ? err.message : '未知错误')
+      const message = err instanceof Error ? err.message : '未知错误'
+      setErrorMsg(message)
       setStatus('error')
+      // Refresh quota on error (might be 429)
+      getQuota().then((q) => setQuotaRemaining(q.remaining))
     }
   }
 
@@ -77,8 +90,23 @@ export default function Home() {
       </div>
 
       <div className="w-full max-w-3xl bg-white rounded-2xl shadow-lg p-8 flex flex-col gap-8">
+        {/* Quota Display */}
+        <div className="flex items-center justify-between">
+          <div className={`flex items-center gap-2 text-sm ${quotaRemaining > 0 ? 'text-gray-500' : 'text-red-500 font-medium'}`}>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            {quotaRemaining > 0 ? (
+              <span>{t.remainingQuota}：<strong>{quotaRemaining}</strong>{t.quotaUnit}</span>
+            ) : (
+              <span>{t.quotaUsed}</span>
+            )}
+          </div>
+        </div>
+
         {/* Upload */}
-        <UploadZone onFileSelect={handleFileSelect} disabled={status === 'loading'} lang={lang} />
+        <UploadZone onFileSelect={handleFileSelect} disabled={status === 'loading' || quotaRemaining <= 0} lang={lang} />
 
         {/* Loading */}
         {status === 'loading' && (

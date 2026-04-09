@@ -14,6 +14,9 @@ export const translations = {
     error: '处理失败，请稍后重试',
     poweredBy: 'Powered by Remove.bg · Deployed on Cloudflare',
     selectLang: '语言',
+    remainingQuota: '今日剩余额度',
+    quotaUsed: '今日免费额度已用完',
+    quotaUnit: '/3次',
   },
   'zh-TW': {
     title: 'Image Background Remover',
@@ -30,6 +33,9 @@ export const translations = {
     error: '處理失敗，請稍後重試',
     poweredBy: 'Powered by Remove.bg · Deployed on Cloudflare',
     selectLang: '語言',
+    remainingQuota: '今日剩餘額度',
+    quotaUsed: '今日免費額度已用完',
+    quotaUnit: '/3次',
   },
   en: {
     title: 'Image Background Remover',
@@ -46,6 +52,9 @@ export const translations = {
     error: 'Processing failed, please try again',
     poweredBy: 'Powered by Remove.bg · Deployed on Cloudflare',
     selectLang: 'Language',
+    remainingQuota: 'Remaining today',
+    quotaUsed: 'Daily free quota used up',
+    quotaUnit: '/3 uses',
   },
 }
 
