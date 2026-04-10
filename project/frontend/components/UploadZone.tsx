@@ -15,12 +15,12 @@ export default function UploadZone({ onFileSelect, disabled, lang }: UploadZoneP
 
   const handleFile = useCallback(
     (file: File) => {
-      if (!['image/png', 'image/jpeg', 'image/jpg'].includes(file.type)) {
-        alert('仅支持 PNG / JPEG 格式')
+      if (!['image/png', 'image/jpeg', 'image/jpg', 'image/webp'].includes(file.type)) {
+        alert('Only PNG, JPG, and WebP formats are supported')
         return
       }
       if (file.size > 5 * 1024 * 1024) {
-        alert('图片大小不能超过 5MB')
+        alert('File size cannot exceed 5MB')
         return
       }
       onFileSelect(file)
@@ -60,7 +60,7 @@ export default function UploadZone({ onFileSelect, disabled, lang }: UploadZoneP
       <p className="text-sm text-gray-400 mt-1">{t.supported}</p>
       <input
         type="file"
-        accept="image/png,image/jpeg"
+        accept="image/png,image/jpeg,image/webp"
         className="hidden"
         onChange={onInputChange}
         disabled={disabled}
