@@ -1,4 +1,4 @@
-const apiBase = process.env.NEXT_PUBLIC_WORKER_URL || ''
+// All API calls use relative paths (same-origin via Cloudflare custom domain route)
 
 export interface PayPalConfig {
   clientId: string
@@ -32,7 +32,7 @@ export interface SubscriptionInfo {
 
 export async function getPayPalConfig(): Promise<PayPalConfig> {
   try {
-    const res = await fetch(`${apiBase}/api/paypal/config`)
+    const res = await fetch(`/api/paypal/config`)
     return await res.json()
   } catch {
     return { clientId: '', currency: 'USD', mode: 'sandbox' }
@@ -40,7 +40,7 @@ export async function getPayPalConfig(): Promise<PayPalConfig> {
 }
 
 export async function createOrder(packType: string): Promise<CreateOrderResult> {
-  const res = await fetch(`${apiBase}/api/paypal/create-order`, {
+  const res = await fetch(`/api/paypal/create-order`, {
     method: 'POST',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
@@ -52,7 +52,7 @@ export async function createOrder(packType: string): Promise<CreateOrderResult> 
 }
 
 export async function captureOrder(paypalOrderId: string): Promise<CaptureOrderResult> {
-  const res = await fetch(`${apiBase}/api/paypal/capture-order`, {
+  const res = await fetch(`/api/paypal/capture-order`, {
     method: 'POST',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
@@ -64,7 +64,7 @@ export async function captureOrder(paypalOrderId: string): Promise<CaptureOrderR
 }
 
 export async function createSubscription(plan: string): Promise<CreateSubscriptionResult> {
-  const res = await fetch(`${apiBase}/api/paypal/create-subscription`, {
+  const res = await fetch(`/api/paypal/create-subscription`, {
     method: 'POST',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
@@ -77,7 +77,7 @@ export async function createSubscription(plan: string): Promise<CreateSubscripti
 
 export async function getSubscriptionStatus(): Promise<SubscriptionInfo | null> {
   try {
-    const res = await fetch(`${apiBase}/api/paypal/subscription-status`, {
+    const res = await fetch(`/api/paypal/subscription-status`, {
       credentials: 'include',
     })
     const data = await res.json()

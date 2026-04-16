@@ -1,9 +1,5 @@
-// In production, API routes are proxied via Cloudflare custom domain (same origin).
-// Set NEXT_PUBLIC_WORKER_URL only for local development (e.g. http://localhost:8787).
-const WORKER_URL = process.env.NEXT_PUBLIC_WORKER_URL || ''
-
-// When WORKER_URL is empty, use relative paths (same-origin, no CORS/cookie issues)
-const apiBase = WORKER_URL || ''
+// All API calls use relative paths (same-origin via Cloudflare custom domain route /api/* -> Worker)
+// For local dev with a separate Worker, set NEXT_PUBLIC_WORKER_URL=http://localhost:8787
 
 export interface User {
   id: string
@@ -15,7 +11,7 @@ export interface User {
 
 export async function getUser(): Promise<User | null> {
   try {
-    const res = await fetch(`${apiBase}/api/auth/me`, {
+    const res = await fetch(`/api/auth/me`, {
       credentials: 'include',
     })
     const data = await res.json()
@@ -27,12 +23,12 @@ export async function getUser(): Promise<User | null> {
 
 export function loginUrl(): string {
   const redirect = encodeURIComponent(window.location.origin)
-  return `${apiBase}/api/auth/login?redirect=${redirect}`
+  return `/api/auth/login?redirect=${redirect}`
 }
 
 export async function logout(): Promise<void> {
   try {
-    await fetch(`${apiBase}/api/auth/logout`, {
+    await fetch(`/api/auth/logout`, {
       method: 'POST',
       credentials: 'include',
     })
@@ -45,7 +41,7 @@ export async function logout(): Promise<void> {
 
 export async function getCreditBalance(): Promise<number> {
   try {
-    const res = await fetch(`${apiBase}/api/credits/balance`, {
+    const res = await fetch(`/api/credits/balance`, {
       credentials: 'include',
     })
     const data = await res.json()
@@ -57,7 +53,7 @@ export async function getCreditBalance(): Promise<number> {
 
 export async function deductCredit(): Promise<{ success: boolean; balance: number; error?: string }> {
   try {
-    const res = await fetch(`${apiBase}/api/credits/deduct`, {
+    const res = await fetch(`/api/credits/deduct`, {
       method: 'POST',
       credentials: 'include',
     })
@@ -73,7 +69,7 @@ export async function deductCredit(): Promise<{ success: boolean; balance: numbe
 
 export async function claimSignupGift(): Promise<{ success: boolean; credits?: number; error?: string }> {
   try {
-    const res = await fetch(`${apiBase}/api/credits/gift-signup`, {
+    const res = await fetch(`/api/credits/gift-signup`, {
       method: 'POST',
       credentials: 'include',
     })
@@ -101,7 +97,7 @@ export async function getUsageHistory(page = 1, limit = 20): Promise<{
   pagination: { page: number; limit: number; total: number; totalPages: number }
 }> {
   try {
-    const res = await fetch(`${apiBase}/api/credits/history?page=${page}&limit=${limit}`, {
+    const res = await fetch(`/api/credits/history?page=${page}&limit=${limit}`, {
       credentials: 'include',
     })
     return await res.json()
@@ -114,7 +110,7 @@ export async function getUsageHistory(page = 1, limit = 20): Promise<{
 
 export async function getGuestQuota(fingerprint: string): Promise<{ remaining: number; used: number; total: number }> {
   try {
-    const res = await fetch(`${apiBase}/api/guest/quota`, {
+    const res = await fetch(`/api/guest/quota`, {
       headers: { 'X-Device-Fingerprint': fingerprint },
     })
     return await res.json()
@@ -125,7 +121,7 @@ export async function getGuestQuota(fingerprint: string): Promise<{ remaining: n
 
 export async function trackGuestUsage(fingerprint: string): Promise<{ success: boolean; remaining: number; error?: string }> {
   try {
-    const res = await fetch(`${apiBase}/api/guest/track`, {
+    const res = await fetch(`/api/guest/track`, {
       method: 'POST',
       headers: { 'X-Device-Fingerprint': fingerprint },
     })
