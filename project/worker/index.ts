@@ -195,7 +195,7 @@ async function handleCallback(request: Request, env: Env): Promise<Response> {
     status: 302,
     headers: {
       Location: frontendUrl,
-      'Set-Cookie': `session=${sessionId}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${7 * 24 * 60 * 60}`,
+      'Set-Cookie': `session=${sessionId}; HttpOnly; Secure; SameSite=None; Path=/; Max-Age=${7 * 24 * 60 * 60}`,
     },
   })
 }
@@ -238,7 +238,7 @@ async function handleLogout(request: Request, env: Env): Promise<Response> {
     200,
     {
       ...corsHeaders(origin),
-      'Set-Cookie': 'session=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0',
+      'Set-Cookie': 'session=; HttpOnly; Secure; SameSite=None; Path=/; Max-Age=0',
     },
   )
 }
