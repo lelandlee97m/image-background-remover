@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Navbar from '@/components/Navbar'
@@ -38,7 +38,7 @@ const comparisonRows = [
   { feature: 'compApi', guest: false, free: false, paid: true },
 ]
 
-export default function PricingPage() {
+function PricingContent() {
   const [lang, setLang] = useState<Lang>('en')
   const t = translations[lang]
   const router = useRouter()
@@ -347,5 +347,13 @@ export default function PricingPage() {
 
       <Footer lang={lang} />
     </div>
+  )
+}
+
+export default function PricingPage() {
+  return (
+    <Suspense>
+      <PricingContent />
+    </Suspense>
   )
 }
