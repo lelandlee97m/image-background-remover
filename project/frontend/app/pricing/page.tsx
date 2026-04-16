@@ -74,7 +74,7 @@ export default function PricingPage() {
         return
       }
       try {
-        await loadPayPalSDK(config.clientId, config.currency)
+        await loadPayPalSDK(config.clientId, config.currency, config.mode)
         setSdkLoaded(true)
       } catch {
         setSdkError(true)

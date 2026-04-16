@@ -47,9 +47,12 @@ function generateSessionToken(): string {
 }
 
 function corsHeaders(origin: string): Record<string, string> {
+  // When credentials: 'include' is used, Origin must be a specific domain, not '*'
+  // Browsers reject cookies if Access-Control-Allow-Origin is wildcard
   return {
-    'Access-Control-Allow-Origin': origin || '*',
+    'Access-Control-Allow-Origin': origin || 'https://imagebackgroundremover88ic.shop',
     'Access-Control-Allow-Credentials': 'true',
+    'Vary': 'Origin',
   }
 }
 
@@ -1056,7 +1059,7 @@ export default {
     if (request.method === 'OPTIONS') {
       return new Response(null, {
         headers: {
-          'Access-Control-Allow-Origin': request.headers.get('Origin') || '*',
+          'Access-Control-Allow-Origin': request.headers.get('Origin') || 'https://imagebackgroundremover88ic.shop',
           'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
           'Access-Control-Allow-Headers': 'Content-Type, X-Device-Fingerprint',
           'Access-Control-Allow-Credentials': 'true',
