@@ -15,4 +15,8 @@ database_id = "07d3fb17-7e47-4c75-8546-2070b6dc47cb"
 # - REMOVE_BG_API_KEY
 # - GOOGLE_CLIENT_ID
 # - GOOGLE_CLIENT_SECRET
+# - PAYPAL_CLIENT_ID
+# - PAYPAL_CLIENT_SECRET
+# - PAYPAL_WEBHOOK_ID (optional, for webhook signature verification)
+# - PAYPAL_MODE (optional, 'sandbox' or 'live', defaults to 'sandbox')
 # Local dev: npx wrangler secret put <NAME>

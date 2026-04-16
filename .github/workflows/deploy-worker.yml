@@ -37,6 +37,8 @@ jobs:
           echo "${{ secrets.REMOVE_BG_API_KEY }}" | npx wrangler@3.60.3 secret put REMOVE_BG_API_KEY
           echo "${{ secrets.GOOGLE_CLIENT_ID }}"     | npx wrangler@3.60.3 secret put GOOGLE_CLIENT_ID
           echo "${{ secrets.GOOGLE_CLIENT_SECRET }}" | npx wrangler@3.60.3 secret put GOOGLE_CLIENT_SECRET
+          echo "${{ secrets.PAYPAL_CLIENT_ID }}"     | npx wrangler@3.60.3 secret put PAYPAL_CLIENT_ID
+          echo "${{ secrets.PAYPAL_CLIENT_SECRET }}" | npx wrangler@3.60.3 secret put PAYPAL_CLIENT_SECRET
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

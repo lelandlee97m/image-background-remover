@@ -35,6 +35,7 @@ jobs:
           # Production uses custom domain route (same-origin), no cross-origin needed.
           # Set NEXT_PUBLIC_WORKER_URL only for local dev (e.g. http://localhost:8787).
           NEXT_PUBLIC_WORKER_URL: ''
+          NEXT_PUBLIC_PAYPAL_CLIENT_ID: ${{ secrets.PAYPAL_CLIENT_ID }}
 
       - name: Deploy to Cloudflare Pages
         working-directory: project/frontend

@@ -56,3 +56,39 @@ CREATE TABLE IF NOT EXISTS guest_usage (
   last_used TEXT,
   created_at TEXT DEFAULT (datetime('now'))
 );
+
+-- PayPal orders (one-time credit pack purchases)
+CREATE TABLE IF NOT EXISTS orders (
+  id TEXT PRIMARY KEY,
+  user_id TEXT REFERENCES users(id),
+  paypal_order_id TEXT UNIQUE NOT NULL,
+  pack_type TEXT NOT NULL,
+  credits INTEGER NOT NULL,
+  amount REAL NOT NULL,
+  currency TEXT DEFAULT 'USD',
+  status TEXT DEFAULT 'pending',
+  created_at TEXT DEFAULT (datetime('now')),
+  completed_at TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_orders_user_id ON orders(user_id);
+CREATE INDEX IF NOT EXISTS idx_orders_paypal_id ON orders(paypal_order_id);
+
+-- PayPal subscriptions (recurring plans)
+CREATE TABLE IF NOT EXISTS subscriptions (
+  id TEXT PRIMARY KEY,
+  user_id TEXT REFERENCES users(id),
+  paypal_subscription_id TEXT UNIQUE NOT NULL,
+  plan TEXT NOT NULL,
+  tier TEXT DEFAULT 'pro_lite',
+  amount REAL NOT NULL,
+  currency TEXT DEFAULT 'USD',
+  status TEXT DEFAULT 'active',
+  credits_per_cycle INTEGER NOT NULL,
+  created_at TEXT DEFAULT (datetime('now')),
+  next_billing_at TEXT,
+  cancelled_at TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_subscriptions_user_id ON subscriptions(user_id);
+CREATE INDEX IF NOT EXISTS idx_subscriptions_paypal_id ON subscriptions(paypal_subscription_id);

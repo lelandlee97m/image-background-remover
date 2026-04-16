@@ -1,10 +1,19 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import { Lang, translations } from '@/lib/i18n'
+import { getUser, getDeviceFingerprint, getGuestQuota } from '@/lib/auth'
+import {
+  loadPayPalSDK,
+  getPayPalConfig,
+  createOrder,
+  captureOrder,
+  createSubscription,
+} from '@/lib/paypal'
 
 const creditPacks = [
   { name: 'starter', credits: 50, price: 2.99, perCredit: 0.06 },
@@ -32,12 +41,105 @@ const comparisonRows = [
 export default function PricingPage() {
   const [lang, setLang] = useState<Lang>('en')
   const t = translations[lang]
+  const router = useRouter()
+  const searchParams = useSearchParams()
+
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [sdkLoaded, setSdkLoaded] = useState(false)
+  const [sdkError, setSdkError] = useState(false)
+  const [processingPack, setProcessingPack] = useState<string | null>(null)
+  const [processingSub, setProcessingSub] = useState<string | null>(null)
+  const [paymentMessage, setPaymentMessage] = useState<{ type: 'success' | 'cancelled'; message: string } | null>(null)
+
+  // Check login status and payment result on mount
+  useEffect(() => {
+    getUser().then(u => setIsLoggedIn(!!u))
+
+    const status = searchParams.get('payment')
+    if (status === 'success') {
+      setPaymentMessage({ type: 'success', message: t.paymentSuccess })
+      // Clean URL
+      router.replace('/pricing', { scroll: false })
+    } else if (status === 'cancelled') {
+      setPaymentMessage({ type: 'cancelled', message: t.paymentCancelled })
+      router.replace('/pricing', { scroll: false })
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Load PayPal SDK
+  useEffect(() => {
+    if (!isLoggedIn) return
+    getPayPalConfig().then(async (config) => {
+      if (!config.clientId) {
+        setSdkError(true)
+        return
+      }
+      try {
+        await loadPayPalSDK(config.clientId, config.currency)
+        setSdkLoaded(true)
+      } catch {
+        setSdkError(true)
+      }
+    })
+  }, [isLoggedIn])
+
+  const handleBuyCredits = useCallback(async (packType: string) => {
+    if (!isLoggedIn) {
+      router.push(`/api/auth/login?redirect=${encodeURIComponent(window.location.origin + '/pricing')}`)
+      return
+    }
+    if (!sdkLoaded) return
+
+    setProcessingPack(packType)
+    try {
+      const { orderId } = await createOrder(packType)
+      // Redirect to PayPal hosted checkout
+      window.location.href = `https://www.sandbox.paypal.com/checkoutnow?token=${orderId}`
+    } catch (err: any) {
+      setPaymentMessage({ type: 'cancelled', message: err.message || t.paymentFailed })
+      setProcessingPack(null)
+    }
+  }, [isLoggedIn, sdkLoaded, t, router])
+
+  const handleSubscribe = useCallback(async (plan: string) => {
+    if (!isLoggedIn) {
+      router.push(`/api/auth/login?redirect=${encodeURIComponent(window.location.origin + '/pricing')}`)
+      return
+    }
+
+    setProcessingSub(plan)
+    try {
+      const { approveLink } = await createSubscription(plan)
+      // Redirect to PayPal subscription approval
+      window.location.href = approveLink
+    } catch (err: any) {
+      setPaymentMessage({ type: 'cancelled', message: err.message || t.paymentFailed })
+      setProcessingSub(null)
+    }
+  }, [isLoggedIn, t, router])
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 to-blue-50">
       <Navbar lang={lang} setLang={setLang} />
 
       <main className="flex-1 w-full max-w-5xl mx-auto px-4 py-12 space-y-16">
+        {/* Payment Status Banner */}
+        {paymentMessage && (
+          <div className={`max-w-md mx-auto px-4 py-3 rounded-xl text-center text-sm font-medium ${
+            paymentMessage.type === 'success'
+              ? 'bg-green-50 text-green-700 border border-green-200'
+              : 'bg-amber-50 text-amber-700 border border-amber-200'
+          }`}>
+            {paymentMessage.message}
+            <button
+              onClick={() => setPaymentMessage(null)}
+              className="ml-2 text-gray-400 hover:text-gray-600"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
         {/* Hero */}
         <div className="text-center space-y-3">
           <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">{t.priceTitle}</h1>
@@ -79,12 +181,27 @@ export default function PricingPage() {
                 </div>
 
                 <div className="mt-auto">
-                  <button
-                    disabled
-                    className="w-full py-3 rounded-xl font-medium text-sm bg-gray-100 text-gray-400 cursor-not-allowed"
-                  >
-                    {t.comingSoon}
-                  </button>
+                  {processingPack === pack.name ? (
+                    <div className="w-full py-3 rounded-xl font-medium text-sm bg-blue-50 text-blue-600 text-center animate-pulse">
+                      {t.processing}
+                    </div>
+                  ) : sdkError ? (
+                    <div className="w-full py-3 rounded-xl font-medium text-sm bg-red-50 text-red-400 text-center">
+                      {t.sdkLoadError}
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => handleBuyCredits(pack.name)}
+                      disabled={!sdkLoaded}
+                      className={`w-full py-3 rounded-xl font-medium text-sm transition-all ${
+                        sdkLoaded
+                          ? 'bg-blue-600 hover:bg-blue-700 text-white cursor-pointer shadow-sm hover:shadow'
+                          : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                      }`}
+                    >
+                      {isLoggedIn ? (sdkLoaded ? t.buyNow : 'Loading...') : t.signInToBuy}
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
@@ -128,12 +245,27 @@ export default function PricingPage() {
                 </div>
 
                 <div className="mt-auto">
-                  <button
-                    disabled
-                    className="w-full py-3 rounded-xl font-medium text-sm bg-gray-100 text-gray-400 cursor-not-allowed"
-                  >
-                    {t.comingSoon}
-                  </button>
+                  {processingSub === sub.name ? (
+                    <div className="w-full py-3 rounded-xl font-medium text-sm bg-purple-50 text-purple-600 text-center animate-pulse">
+                      {t.processing}
+                    </div>
+                  ) : sdkError ? (
+                    <div className="w-full py-3 rounded-xl font-medium text-sm bg-red-50 text-red-400 text-center">
+                      {t.sdkLoadError}
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => handleSubscribe(sub.name)}
+                      disabled={!isLoggedIn}
+                      className={`w-full py-3 rounded-xl font-medium text-sm transition-all ${
+                        isLoggedIn
+                          ? 'bg-purple-600 hover:bg-purple-700 text-white cursor-pointer shadow-sm hover:shadow'
+                          : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                      }`}
+                    >
+                      {isLoggedIn ? t.subscribeNow : t.signInToBuy}
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
@@ -202,13 +334,13 @@ export default function PricingPage() {
           </div>
         </section>
 
-        {/* FAQ hint */}
+        {/* PayPal hint */}
         <div className="text-center space-y-2 pb-8">
           <p className="text-gray-500 text-sm">
-            💡 Payment via PayPal — coming soon!
+            🔒 {t.paypalSecure}
           </p>
           <Link href="/" className="text-blue-600 hover:text-blue-700 text-sm font-medium hover:underline">
-            ← Back to Home
+            ← {t.backToHome}
           </Link>
         </div>
       </main>
