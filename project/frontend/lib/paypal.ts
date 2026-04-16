@@ -88,14 +88,15 @@ export async function getSubscriptionStatus(): Promise<SubscriptionInfo | null> 
 }
 
 /** Load PayPal JS SDK dynamically and return the global paypal object */
-export function loadPayPalSDK(clientId: string, currency = 'USD'): Promise<void> {
+export function loadPayPalSDK(clientId: string, currency = 'USD', mode = 'sandbox'): Promise<void> {
   return new Promise((resolve, reject) => {
     if ((window as any).paypal) {
       resolve()
       return
     }
+    const baseUrl = mode === 'live' ? 'https://www.paypal.com/sdk/js' : 'https://www.sandbox.paypal.com/sdk/js'
     const script = document.createElement('script')
-    script.src = `https://www.sandbox.paypal.com/sdk/js?client-id=${clientId}&currency=${currency}&intent=capture&vault=true`
+    script.src = `${baseUrl}?client-id=${clientId}&currency=${currency}&intent=capture&vault=true`
     script.onload = () => resolve()
     script.onerror = () => reject(new Error('Failed to load PayPal SDK'))
     document.head.appendChild(script)

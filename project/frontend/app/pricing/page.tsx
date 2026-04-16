@@ -93,8 +93,10 @@ function PricingContent() {
     setProcessingPack(packType)
     try {
       const { orderId } = await createOrder(packType)
-      // Redirect to PayPal hosted checkout
-      window.location.href = `https://www.sandbox.paypal.com/checkoutnow?token=${orderId}`
+      // Get PayPal mode from config for checkout redirect
+      const config = await getPayPalConfig()
+      const checkoutHost = config.mode === 'live' ? 'www.paypal.com' : 'www.sandbox.paypal.com'
+      window.location.href = `https://${checkoutHost}/checkoutnow?token=${orderId}`
     } catch (err: any) {
       setPaymentMessage({ type: 'cancelled', message: err.message || t.paymentFailed })
       setProcessingPack(null)
