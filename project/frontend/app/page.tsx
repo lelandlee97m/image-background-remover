@@ -72,7 +72,7 @@ export default function Home() {
       const formData = new FormData()
       formData.append('image', file)
 
-      const workerUrl = process.env.NEXT_PUBLIC_WORKER_URL || '/api/remove-bg'
+      const workerUrl = process.env.NEXT_PUBLIC_WORKER_URL || '/api'
       const res = await fetch(workerUrl, {
         method: 'POST',
         body: formData,

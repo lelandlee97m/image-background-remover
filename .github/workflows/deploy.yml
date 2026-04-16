@@ -32,7 +32,9 @@ jobs:
         working-directory: project/frontend
         run: pnpm run build
         env:
-          NEXT_PUBLIC_WORKER_URL: ${{ secrets.NEXT_PUBLIC_WORKER_URL }}
+          # Production uses custom domain route (same-origin), no cross-origin needed.
+          # Set NEXT_PUBLIC_WORKER_URL only for local dev (e.g. http://localhost:8787).
+          NEXT_PUBLIC_WORKER_URL: ''
 
       - name: Deploy to Cloudflare Pages
         working-directory: project/frontend
