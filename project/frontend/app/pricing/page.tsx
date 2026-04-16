@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect, useCallback, Suspense } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import { Lang, translations } from '@/lib/i18n'
@@ -38,11 +38,10 @@ const comparisonRows = [
   { feature: 'compApi', guest: false, free: false, paid: true },
 ]
 
-function PricingContent() {
+export default function PricingPage() {
   const [lang, setLang] = useState<Lang>('en')
   const t = translations[lang]
   const router = useRouter()
-  const searchParams = useSearchParams()
 
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [sdkLoaded, setSdkLoaded] = useState(false)
@@ -55,14 +54,14 @@ function PricingContent() {
   useEffect(() => {
     getUser().then(u => setIsLoggedIn(!!u))
 
-    const status = searchParams.get('payment')
+    const params = new URLSearchParams(window.location.search)
+    const status = params.get('payment')
     if (status === 'success') {
       setPaymentMessage({ type: 'success', message: t.paymentSuccess })
-      // Clean URL
-      router.replace('/pricing', { scroll: false })
+      window.history.replaceState(null, '', '/pricing')
     } else if (status === 'cancelled') {
       setPaymentMessage({ type: 'cancelled', message: t.paymentCancelled })
-      router.replace('/pricing', { scroll: false })
+      window.history.replaceState(null, '', '/pricing')
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -349,13 +348,5 @@ function PricingContent() {
 
       <Footer lang={lang} />
     </div>
-  )
-}
-
-export default function PricingPage() {
-  return (
-    <Suspense>
-      <PricingContent />
-    </Suspense>
   )
 }
